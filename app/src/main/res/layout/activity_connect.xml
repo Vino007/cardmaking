@@ -1,0 +1,40 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:padding="10dp"
+    android:layout_height="fill_parent"
+
+    android:scrollbars="vertical">
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.example.vino.esp8266test.ConnectActivity"
+    android:orientation="vertical"
+
+
+    >
+    <TextView
+        android:textSize="25dp"
+        android:gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/welcome_slogan"/>
+
+    <TextView
+        android:layout_marginTop="50dp"
+        android:textSize="20dp"
+        android:gravity="center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/click_connect"/>
+    <Button
+        android:layout_marginTop="50dp"
+        android:id="@+id/connect_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="connect"
+        android:textColor="@color/white"
+        android:background="@drawable/blue_btn"
+        />
+
+</LinearLayout>
+</ScrollView>

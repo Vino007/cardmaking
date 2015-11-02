@@ -1,0 +1,36 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.example.vino007.cardmaking">
+    <!-- 使用网络功能所需权限 -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"></uses-permission>
+    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"></uses-permission>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE"></uses-permission>
+    <application android:allowBackup="true" android:label="@string/app_name"
+        android:icon="@mipmap/app_logo" android:supportsRtl="true"
+        android:name="com.example.vino007.cardmaking.utils.MyApplication"
+        android:theme="@style/AppTheme">
+        <activity
+            android:logo="@mipmap/app_logo"
+            android:name=".activity.MainActivity"
+            android:label="@string/app_name"
+            android:parentActivityName="com.example.vino007.cardmaking.activity.ConnectActivity">
+            <!--  meta-data 用于支持 support 4.0 以及以下来指明上级活动 -->
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.vino007.cardmaking.activity.ConnectActivity" />
+
+        </activity>
+        <activity
+            android:name=".activity.ConnectActivity"
+            android:logo="@mipmap/app_logo"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+
+</manifest>

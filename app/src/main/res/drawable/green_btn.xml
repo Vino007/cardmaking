@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+
+    <item android:state_pressed="true">
+
+        <shape>
+            <corners android:radius="10dp"></corners>
+            <solid android:color="@color/light_green"></solid>
+
+        </shape>
+    </item>
+    <!--StateList中第一个匹配当前状态的item会被使用、因此，如果第一个item没有任何状态特性的话
+        那么它将每次都被使用，这也是为什么默认的值必须总是在最后 -->
+    <!--默认值需放在最后-->
+    <!--shape与color不能共存-->
+    <item >
+
+        <shape>
+            <corners android:radius="10dp"></corners>
+            <solid android:color="@color/deep_green"></solid><!--填充颜色-->
+
+        </shape>
+
+    </item>
+</selector>
