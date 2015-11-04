@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
 
+import com.example.vino007.cardmaking.constant.Constants;
 import com.example.vino007.cardmaking.utils.MyApplication;
 import com.example.vino007.cardmaking.utils.MyUtils;
 import com.example.vino007.cardmaking.R;
@@ -92,7 +93,7 @@ public class ConnectActivity extends Activity {
         @Override
         public void run() {
             try {
-                client = new SocketClient("192.168.4.1", 8080);
+                client = new SocketClient(Constants.DEFAULT_DEVICE_IP, Constants.DEFAULT_PORT);
                 application.setClient(client);
                 application.setConnectStatus(true);
                 Message msg = handler.obtainMessage();

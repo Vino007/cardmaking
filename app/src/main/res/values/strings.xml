@@ -22,4 +22,5 @@
     <string name="password">1234</string>
 <!--充值相关-->
     <string name="rechargeTitle">请输入金额</string>
+    <string name="alterPasswordTitle">请输入新密码</string>
 </resources>

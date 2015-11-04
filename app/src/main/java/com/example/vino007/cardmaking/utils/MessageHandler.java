@@ -1,23 +1,195 @@
 package com.example.vino007.cardmaking.utils;
 
+import android.widget.Toast;
+
+import com.example.vino007.cardmaking.constant.Constants;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * 报文处理类
+ *
  * Created by Joker on 2015/5/14.
  */
 public class MessageHandler {
     final static String[] modelDetails={"模式1:只刷卡,密码无效","模式2:只刷卡,密码无效,具有计次功能","模式3:刷卡,密码有效","模式4:刷卡,密码有效,卡片带时间限制"};
+    public final  static int MESSAGE_LENGTH=15;
     /**
      * 初始化报文
      * @return
      */
     public static List<Integer> initMessage(){
         List<Integer> message=new ArrayList<>();
-        for (int i = 0; i < 9; i++)
+        for (int i = 0; i < MESSAGE_LENGTH; i++)
             message.add(0xff);
         return message;
 
+    }
+
+    /**
+     * 20 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+     * @param message
+     * @return
+     */
+    public static List<Integer> getRecycleMessage(List<Integer> message){
+        message.set(0,0XF0);
+        message.set(1,0XFF);
+        message.set(2,0XFF);
+        message.set(3,0XFF);
+        message.set(4,0XFF);
+        message.set(5,0XFF);
+        message.set(6,0XFF);
+        message.set(7,0XFF);
+        message.set(8,0XFF);
+        message.set(9,0XFF);
+        message.set(10,0XFF);
+        message.set(11,0XFF);
+        message.set(12,0XFF);
+        message.set(13,0XFF);
+        message.set(14,0XFF);
+        return message;
+    }
+
+    /**
+     * 21 X1 X2 P1 P2 P3 P4 P5 P6 00 00 00 00 00 00
+     * @param message 报文
+     * @param rechargeValue 充值金额
+     * @param nowPassword 当前密码
+     * @return
+     */
+    public static List<Integer> getRechargeMessage(List<Integer> message,int rechargeValue,String nowPassword){
+        message.set(0,0XF1);
+        //设置金额
+        Integer rechargeValueHigh=rechargeValue/256;
+        Integer rechargeValueLow=rechargeValue%256;
+        message.set(1,rechargeValueHigh);
+        message.set(2,rechargeValueLow);
+        //设置密码
+        String[] singleNowPassword=nowPassword.split("");
+        message.set(3,Integer.parseInt(singleNowPassword[0]));
+        message.set(4,Integer.parseInt(singleNowPassword[1]));
+        message.set(5,Integer.parseInt(singleNowPassword[2]));
+        message.set(6,Integer.parseInt(singleNowPassword[3]));
+        message.set(7,Integer.parseInt(singleNowPassword[4]));
+        message.set(8,Integer.parseInt(singleNowPassword[5]));
+
+        message.set(9,0XFF);
+        message.set(10,0XFF);
+        message.set(11,0XFF);
+        message.set(12,0XFF);
+        message.set(13,0XFF);
+        message.set(14,0XFF);
+
+
+        return message;
+    }
+
+    /**
+     * 22 00 00 P1 P2 P3 P4 P5 P6 S1 S2 S3 S4 S5 S6
+     * @param message
+     * @return
+     */
+    public static List<Integer> getKeyCardMakingMessage(List<Integer> message,String nowPassword,String oldPassword){
+        message.set(0,0XF2);
+        message.set(1,0XFF);
+        message.set(2,0XFF);
+        //设置新密码
+        String[] singleNowPassword=nowPassword.split("");
+        message.set(3,Integer.parseInt(singleNowPassword[0]));
+        message.set(4,Integer.parseInt(singleNowPassword[1]));
+        message.set(5,Integer.parseInt(singleNowPassword[2]));
+        message.set(6,Integer.parseInt(singleNowPassword[3]));
+        message.set(7,Integer.parseInt(singleNowPassword[4]));
+        message.set(8,Integer.parseInt(singleNowPassword[5]));
+
+        //设置原密码
+        if(oldPassword.equals(Constants.DEFAULT_OLD_PASSWORD)){
+            message.set(9,0xFF);
+            message.set(10,0xFF);
+            message.set(11,0xFF);
+            message.set(12,0xFF);
+            message.set(13,0xFF);
+            message.set(14,0xFF);
+        }else{
+            String[] singleOldPassword=oldPassword.split("");
+            message.set(9,Integer.parseInt(singleOldPassword[0]));
+            message.set(10,Integer.parseInt(singleOldPassword[1]));
+            message.set(11,Integer.parseInt(singleOldPassword[2]));
+            message.set(12,Integer.parseInt(singleOldPassword[3]));
+            message.set(13,Integer.parseInt(singleOldPassword[4]));
+            message.set(14,Integer.parseInt(singleOldPassword[5]));
+        }
+
+        return message;
+    }
+
+    /**
+     * 23 00 00 P1 P2 P3 P4 P5 P6 00 00 00 00 00 00
+     * @param message
+     * @param nowPassword 当前密码
+     * @return
+     */
+    public static List<Integer> getManageCardMakingMessage(List<Integer> message,String nowPassword){
+        message.set(0,0XF3);
+        message.set(1,0XFF);
+        message.set(2,0XFF);
+        //设置密码
+        String[] singleNowPassword=nowPassword.split("");
+        message.set(3,Integer.parseInt(singleNowPassword[0]));
+        message.set(4,Integer.parseInt(singleNowPassword[1]));
+        message.set(5,Integer.parseInt(singleNowPassword[2]));
+        message.set(6,Integer.parseInt(singleNowPassword[3]));
+        message.set(7,Integer.parseInt(singleNowPassword[4]));
+        message.set(8,Integer.parseInt(singleNowPassword[5]));
+
+        message.set(9,0XFF);
+        message.set(10,0XFF);
+        message.set(11,0XFF);
+        message.set(12,0XFF);
+        message.set(13,0XFF);
+        message.set(14,0XFF);
+        return message;
+    }
+
+
+
+    /**
+     * 处理报文
+     * 05 00 X1 X2 00 00 旧卡
+     * 05 00 00 00 01 01 无效卡
+     * 05 00 00 00 02 02 IC卡块数据读写错误
+     * 05 00 00 00 03 03 新卡
+     * 05 00 00 00 04 04 制作秘钥卡
+     * 05 00 00 00 06 06 制作管理卡片
+     * @param msg
+     * @return
+     */
+    public static String handleMessage(List<Integer> msg){
+        //校验报文头
+
+        if(msg==null)
+            return "失败，请重新尝试";
+        Integer typeHigh=msg.get(4);
+        Integer typeLow=msg.get(5);
+        if(!typeHigh.equals(typeLow))
+            return "失败，请重新尝试";
+        String alertMessage;
+        switch (typeHigh){
+            case 0x03:
+                alertMessage="回收卡片成功";break;
+            case 0x00:
+                alertMessage="充值成功";break;
+            case 0x04:
+                alertMessage="制秘钥卡成功";break;
+            case 0x06:
+                alertMessage="制管理卡成功";break;
+            case 0x02:
+                alertMessage="IC卡块数据读写错误";break;
+            default:
+                alertMessage="失败，请重新尝试";break;
+        }
+        return alertMessage;
     }
     /**
      * 处理接收到的报文信息，将处理后的信息回传给listview显示

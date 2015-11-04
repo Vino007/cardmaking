@@ -154,7 +154,7 @@ public class SocketClient {
 
     /**
      * 发送整型数组
-     * 每次发送完毕后初始化报文即全部设置为0x00
+     * 每次发送完毕后初始化报文即全部设置为0xff
      *
      * @param msg
      * @return
@@ -162,7 +162,7 @@ public class SocketClient {
 
     public void sendMessage(List<Integer> msg) {
 
-        msg = sumCheck(msg);//添加和校验
+      //  msg = sumCheck(msg);//添加和校验
         try {
             os = client.getOutputStream();
             BufferedOutputStream out = new BufferedOutputStream(os);//不能使用dataoutputStream，由于data传送的是byte类型，byte的范围-127-127,不符合
@@ -180,6 +180,10 @@ public class SocketClient {
 
             }
             //return in.readLine();//阻塞直到读取到换行，读取响应的字符串
+            /**
+
+
+             */
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
@@ -191,13 +195,13 @@ public class SocketClient {
 
     /**
      * 发送整型数组
-     * 每次发送完毕后初始化报文即全部设置为0x00
+     * 每次发送完毕后初始化报文即全部设置为0xff
      *
-     * @param msg
-     * @return
+     * @param msg List<Integer> msg
+     * @return null or List<Integer>
      */
-    public List<Integer> readMessage(List<Integer> msg) {
-        msg = crc(msg);
+    public List<Integer> sendMessageWithResponse(List<Integer> msg) {
+      //  msg = crc(msg);
         List<Integer> resultMsg=new ArrayList<>();
         try {
             os = client.getOutputStream();
