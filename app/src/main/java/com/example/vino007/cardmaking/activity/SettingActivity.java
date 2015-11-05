@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.vino007.cardmaking.R;
@@ -22,6 +23,7 @@ import com.example.vino007.cardmaking.utils.MyUtils;
 import com.example.vino007.cardmaking.utils.SocketClient;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class SettingActivity extends Activity {
@@ -33,6 +35,8 @@ public class SettingActivity extends Activity {
     private MyApplication application;
     private Handler handler;
     private List<Integer> message = new ArrayList<>();//报文存储
+    private TextView oldPassword_tv;
+    private TextView nowPassword_tv;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -40,6 +44,10 @@ public class SettingActivity extends Activity {
         manageCardMaking_btn= (Button) findViewById(R.id.manageCardMaking_btn);
         keyCardMaking_btn= (Button) findViewById(R.id.keyCardMaking_btn);
         alterPassword_btn= (Button) findViewById(R.id.alterPassword_btn);
+        oldPassword_tv= (TextView) findViewById(R.id.old_password_tv);
+        nowPassword_tv= (TextView) findViewById(R.id.now_password_tv);
+        oldPassword_tv.setText(getOldPassword());
+        nowPassword_tv.setText(getNowPassword());
 
         //初始化下行报文
         message= MessageHandler.initMessage();
@@ -65,7 +73,7 @@ public class SettingActivity extends Activity {
             public void onClick(View v) {
 
                 SharedPreferences sf=getSharedPreferences("passwordData", MODE_PRIVATE);
-                String oldPassword=sf.getString("oldPassword", Constants.DEFAULT_OLD_PASSWORD);
+                final String oldPassword=sf.getString("oldPassword", Constants.DEFAULT_OLD_PASSWORD);
                 final String nowPassword=sf.getString("nowPassword", Constants.DEFAULT_NOW_PASSWORD);
                 Log.i("oldPassword",oldPassword);
                 Log.i("nowPassword",nowPassword);
@@ -89,6 +97,8 @@ public class SettingActivity extends Activity {
                         editor.putString("oldPassword", nowPassword);
                         editor.putString("nowPassword", newPassword);
                         editor.commit();
+                        nowPassword_tv.setText(newPassword);
+                        oldPassword_tv.setText(nowPassword);
 
 
                     }
@@ -117,12 +127,12 @@ public class SettingActivity extends Activity {
         public void run() {
             client=application.getClient();
             if (client != null && !client.isClose()) { //判断socket连接是否还存在
-               // client.sendMessage(message);//无返回值，不读取模块返回的信息
-                List<Integer> responseMessage=client.sendMessageWithResponse(message);
-
+                client.sendMessage(message);//无返回值，不读取模块返回的信息
+             //   List<Integer> responseMessage=client.sendMessageWithResponse(message);
+              //  Log.i("responseMessage", Arrays.toString(responseMessage.toArray()));
                 Message msg = handler.obtainMessage();
                 msg.what = 0X01;//发送报文成功
-                msg.obj=responseMessage;
+              //  msg.obj=responseMessage;
                 handler.sendMessage(msg);
             }else
             {
@@ -143,7 +153,9 @@ public class SettingActivity extends Activity {
             if(msg.obj!=null&&msg.what==0x01) {
                 List<Integer> responseMessage = (List<Integer>) msg.obj;
                 String alterMessage = MessageHandler.handleMessage(responseMessage);
-                Toast.makeText(SettingActivity.this,alterMessage, Toast.LENGTH_SHORT).show();
+                if(alterMessage!=null)
+                    Toast.makeText(SettingActivity.this,alterMessage, Toast.LENGTH_SHORT).show();
+
             }
 
              if (msg.what == 0x02) {//连接成功

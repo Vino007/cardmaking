@@ -96,9 +96,11 @@ public class ConnectActivity extends Activity {
                 client = new SocketClient(Constants.DEFAULT_DEVICE_IP, Constants.DEFAULT_PORT);
                 application.setClient(client);
                 application.setConnectStatus(true);
+
                 Message msg = handler.obtainMessage();
                 msg.what = 0x02;//成功
                 handler.sendMessage(msg);
+
 
             } catch (RuntimeException e) {
                 e.printStackTrace();

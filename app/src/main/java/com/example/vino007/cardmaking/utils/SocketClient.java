@@ -2,6 +2,8 @@ package com.example.vino007.cardmaking.utils;
 
 import android.util.Log;
 
+import com.example.vino007.cardmaking.constant.Constants;
+
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -9,6 +11,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -180,16 +183,36 @@ public class SocketClient {
 
             }
             //return in.readLine();//阻塞直到读取到换行，读取响应的字符串
-            /**
 
-
-             */
         } catch (IOException e) {
             e.printStackTrace();
         } finally {
 
 
         }
+    }
+
+    public List<Integer> readMessage(){
+        List<Integer> resultMsg=new ArrayList<>();
+        try {
+            is = client.getInputStream();
+
+        in = new BufferedReader(new InputStreamReader(is));
+        int data;
+        while ((data=in.read())!='\r'){ //判断接收到换行后停止
+
+            if (resultMsg.size()==0&&data==0x05)  //过滤报文
+                 resultMsg.add(data);
+            else if (resultMsg.size()==1&&data==0x00)
+                resultMsg.add(data);
+            else if (resultMsg.size()>1)
+                resultMsg.add(data);
+        }
+        }catch (IOException e) {
+            e.printStackTrace();
+        }
+        return resultMsg;
+
     }
 
 
@@ -202,6 +225,7 @@ public class SocketClient {
      */
     public List<Integer> sendMessageWithResponse(List<Integer> msg) {
       //  msg = crc(msg);
+        Log.i("发送的报文",Arrays.toString(msg.toArray()));
         List<Integer> resultMsg=new ArrayList<>();
         try {
             os = client.getOutputStream();
@@ -220,7 +244,7 @@ public class SocketClient {
 
             }
             int data;
-            while ((data=in.read())!='\n'){ //判断接收到换行后停止
+            while ((data=in.read())!='\r'){ //判断接收到换行后停止
                 resultMsg.add(data);
             }
             Log.i("接收到的参数报文", Arrays.toString(resultMsg.toArray()));

@@ -1,10 +1,12 @@
 package com.example.vino007.cardmaking.utils;
 
+import android.util.Log;
 import android.widget.Toast;
 
 import com.example.vino007.cardmaking.constant.Constants;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -66,13 +68,14 @@ public class MessageHandler {
         message.set(1,rechargeValueHigh);
         message.set(2,rechargeValueLow);
         //设置密码
-        String[] singleNowPassword=nowPassword.split("");
-        message.set(3,Integer.parseInt(singleNowPassword[0]));
-        message.set(4,Integer.parseInt(singleNowPassword[1]));
-        message.set(5,Integer.parseInt(singleNowPassword[2]));
-        message.set(6,Integer.parseInt(singleNowPassword[3]));
-        message.set(7,Integer.parseInt(singleNowPassword[4]));
-        message.set(8,Integer.parseInt(singleNowPassword[5]));
+        char[] singleNowPassword=nowPassword.toCharArray();
+        Log.i("singleNowPassword", Arrays.toString(singleNowPassword));
+        message.set(3,Integer.parseInt(singleNowPassword[0]+""));
+        message.set(4,Integer.parseInt(singleNowPassword[1]+""));
+        message.set(5,Integer.parseInt(singleNowPassword[2]+""));
+        message.set(6,Integer.parseInt(singleNowPassword[3]+""));
+        message.set(7,Integer.parseInt(singleNowPassword[4]+""));
+        message.set(8,Integer.parseInt(singleNowPassword[5]+""));
 
         message.set(9,0XFF);
         message.set(10,0XFF);
@@ -95,13 +98,13 @@ public class MessageHandler {
         message.set(1,0XFF);
         message.set(2,0XFF);
         //设置新密码
-        String[] singleNowPassword=nowPassword.split("");
-        message.set(3,Integer.parseInt(singleNowPassword[0]));
-        message.set(4,Integer.parseInt(singleNowPassword[1]));
-        message.set(5,Integer.parseInt(singleNowPassword[2]));
-        message.set(6,Integer.parseInt(singleNowPassword[3]));
-        message.set(7,Integer.parseInt(singleNowPassword[4]));
-        message.set(8,Integer.parseInt(singleNowPassword[5]));
+        char[] singleNowPassword=nowPassword.toCharArray();
+        message.set(3,Integer.parseInt(singleNowPassword[0]+""));
+        message.set(4,Integer.parseInt(singleNowPassword[1]+""));
+        message.set(5,Integer.parseInt(singleNowPassword[2]+""));
+        message.set(6,Integer.parseInt(singleNowPassword[3]+""));
+        message.set(7,Integer.parseInt(singleNowPassword[4]+""));
+        message.set(8,Integer.parseInt(singleNowPassword[5]+""));
 
         //设置原密码
         if(oldPassword.equals(Constants.DEFAULT_OLD_PASSWORD)){
@@ -112,13 +115,13 @@ public class MessageHandler {
             message.set(13,0xFF);
             message.set(14,0xFF);
         }else{
-            String[] singleOldPassword=oldPassword.split("");
-            message.set(9,Integer.parseInt(singleOldPassword[0]));
-            message.set(10,Integer.parseInt(singleOldPassword[1]));
-            message.set(11,Integer.parseInt(singleOldPassword[2]));
-            message.set(12,Integer.parseInt(singleOldPassword[3]));
-            message.set(13,Integer.parseInt(singleOldPassword[4]));
-            message.set(14,Integer.parseInt(singleOldPassword[5]));
+            char[] singleOldPassword=oldPassword.toCharArray();
+            message.set(9,Integer.parseInt(singleOldPassword[0]+""));
+            message.set(10,Integer.parseInt(singleOldPassword[1]+""));
+            message.set(11,Integer.parseInt(singleOldPassword[2]+""));
+            message.set(12,Integer.parseInt(singleOldPassword[3]+""));
+            message.set(13,Integer.parseInt(singleOldPassword[4]+""));
+            message.set(14,Integer.parseInt(singleOldPassword[5]+""));
         }
 
         return message;
@@ -135,13 +138,13 @@ public class MessageHandler {
         message.set(1,0XFF);
         message.set(2,0XFF);
         //设置密码
-        String[] singleNowPassword=nowPassword.split("");
-        message.set(3,Integer.parseInt(singleNowPassword[0]));
-        message.set(4,Integer.parseInt(singleNowPassword[1]));
-        message.set(5,Integer.parseInt(singleNowPassword[2]));
-        message.set(6,Integer.parseInt(singleNowPassword[3]));
-        message.set(7,Integer.parseInt(singleNowPassword[4]));
-        message.set(8,Integer.parseInt(singleNowPassword[5]));
+        char[] singleNowPassword=nowPassword.toCharArray();
+        message.set(3,Integer.parseInt(singleNowPassword[0]+""));
+        message.set(4,Integer.parseInt(singleNowPassword[1]+""));
+        message.set(5,Integer.parseInt(singleNowPassword[2]+""));
+        message.set(6,Integer.parseInt(singleNowPassword[3]+""));
+        message.set(7,Integer.parseInt(singleNowPassword[4]+""));
+        message.set(8,Integer.parseInt(singleNowPassword[5]+""));
 
         message.set(9,0XFF);
         message.set(10,0XFF);
@@ -155,7 +158,7 @@ public class MessageHandler {
 
 
     /**
-     * 处理报文
+     * 处理接收到的报文
      * 05 00 X1 X2 00 00 旧卡
      * 05 00 00 00 01 01 无效卡
      * 05 00 00 00 02 02 IC卡块数据读写错误
@@ -177,15 +180,21 @@ public class MessageHandler {
         String alertMessage;
         switch (typeHigh){
             case 0x03:
-                alertMessage="回收卡片成功";break;
-            case 0x00:
-                alertMessage="充值成功";break;
+                alertMessage=null;break;
+            case 0x00: {
+               /* int remainValueHigh=msg.get(2);
+                int remainValueLow=msg.get(3);
+                int remainValue=remainValueHigh*256+remainValueLow;*/
+                        alertMessage = null;
+            }break;
             case 0x04:
                 alertMessage="制秘钥卡成功";break;
             case 0x06:
                 alertMessage="制管理卡成功";break;
             case 0x02:
-                alertMessage="IC卡块数据读写错误";break;
+                alertMessage=null;break;
+            case 0x01:
+                alertMessage=null;break;
             default:
                 alertMessage="失败，请重新尝试";break;
         }

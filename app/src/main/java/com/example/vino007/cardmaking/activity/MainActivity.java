@@ -14,6 +14,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.vino007.cardmaking.R;
@@ -40,10 +41,12 @@ import java.util.List;
  */
 public class MainActivity extends Activity {
 
-    private Button readParameter_btn;
+
     private Button recharge_btn;
     private Button recycle_btn;
     private Button setting_btn;
+    private TextView remainValue_tv;
+    private TextView cardStatus_tv;
     private Handler handler;
     private List<Integer> message ;//报文存储
     private SocketClient client = null;
@@ -54,7 +57,8 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         getActionBar().setDisplayHomeAsUpEnabled(true);//添加返回button
 
-        readParameter_btn = (Button) findViewById(R.id.readParameter_btn);
+        remainValue_tv= (TextView) findViewById(R.id.remainValue_tv);
+        cardStatus_tv= (TextView) findViewById(R.id.cardStatus_tv);
         recharge_btn= (Button) findViewById(R.id.recharge_btn);
         recycle_btn= (Button) findViewById(R.id.recycle_btn);
         setting_btn= (Button) findViewById(R.id.setting_btn);
@@ -63,22 +67,9 @@ public class MainActivity extends Activity {
         //初始化下行报文
         message= MessageHandler.initMessage();
         application = (MyApplication) MainActivity.this.getApplication();
-
+        readOperation();//死循环线程在其他activity中也不会销毁
         /******************************监听器************************************/
-  /*      readParameter_btn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (MyUtils.isWifiConnect(MainActivity.this)) {
-                   // ReadParameterSetting readParameterSetting = new ReadParameterSetting(message);
-                   // message = readParameterSetting.readAll();
 
-                    ReadMessageThread readMessageThread = new ReadMessageThread();
-                    Thread mythread = new Thread(readMessageThread);
-                    mythread.start();
-                } else
-                    Toast.makeText(MainActivity.this, "请先连接wifi", Toast.LENGTH_SHORT).show();
-            }
-        });*/
 
         recharge_btn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -98,6 +89,7 @@ public class MainActivity extends Activity {
                     public void onClick(DialogInterface dialog, int which) {
 
                         String rechargeValueStr = recharge_edit.getText().toString().trim();
+                        Log.i("rechargevaluestr",rechargeValueStr);
                         Integer rechargeValue = Integer.parseInt(rechargeValueStr);
                         Log.i("充值金额rechargeValue", rechargeValue + "");
                         /**
@@ -140,23 +132,6 @@ public class MainActivity extends Activity {
      * ******************************线程********************************************
      */
 
-/*    class ReadMessageThread implements Runnable {
-        @Override
-        public void run() {
-            Message msg = handler.obtainMessage();
-            client=application.getClient();
-            if (client != null && !client.isClose()) { //判断socket连接是否还存在
-                client = application.getClient();
-                List<Integer> result = client.sendMessageWithResponse(message);
-                msg.what = 0X01;//发送报文成功
-                msg.obj = result;
-                handler.sendMessage(msg);
-            } else {
-                msg.what = 0x04;
-                handler.sendMessage(msg);
-            }
-        }
-    }*/
     /**
      * 发送报文，并调用handler处理结果
      */
@@ -166,11 +141,12 @@ public class MainActivity extends Activity {
             client=application.getClient();
             if (client != null && !client.isClose()) { //判断socket连接是否还存在
                 // client.sendMessage(message);//无返回值，不读取模块返回的信息
-                List<Integer> responseMessage=client.sendMessageWithResponse(message);
-
+              //  List<Integer> responseMessage=client.sendMessageWithResponse(message);
+                client.sendMessage(message);
+           //     Log.i("responseMessage",Arrays.toString(responseMessage.toArray()));
                 Message msg = handler.obtainMessage();
                 msg.what = 0X01;//发送报文成功
-                msg.obj=responseMessage;
+           //     msg.obj=responseMessage;
                 handler.sendMessage(msg);
             }else
             {
@@ -182,6 +158,30 @@ public class MainActivity extends Activity {
         }
 
     }
+    public class ReadMessageThread implements Runnable{
+
+        @Override
+        public void run() {
+            client=application.getClient();
+            while (true) {
+                if (client != null && !client.isClose()) { //判断socket连接是否还存在
+                    List<Integer> responseMessage=client.readMessage();
+                    if(responseMessage!=null) {
+                        Log.i("监听收到的报文为", Arrays.toString(responseMessage.toArray()));
+                        Message msg = handler.obtainMessage();
+                        msg.what=0x01;
+                        msg.obj = responseMessage;
+                        handler.sendMessage(msg);
+                    }
+                } else {
+                    Message msg = handler.obtainMessage();
+                    msg.what = 0X04;//发送报文成功
+                    handler.sendMessage(msg);
+                }
+            }
+        }
+    }
+
     /**
      * *******************************handler********************************************
      */
@@ -189,12 +189,39 @@ public class MainActivity extends Activity {
         @Override
         public void handleMessage(Message msg) {
             if (msg.what == 0X01) {
-                Toast.makeText(MainActivity.this, "发送命令成功", Toast.LENGTH_SHORT).show();
+              //  Toast.makeText(MainActivity.this, "发送命令成功", Toast.LENGTH_SHORT).show();
                 if (msg.obj != null) {
                     List<Integer> responseMessage = (List<Integer>) msg.obj;
                     String alterMessage=MessageHandler.handleMessage(responseMessage);
-                    Toast.makeText(MainActivity.this, alterMessage, Toast.LENGTH_SHORT).show();
-
+                    if(alterMessage!=null)
+                        Toast.makeText(MainActivity.this, alterMessage, Toast.LENGTH_SHORT).show();
+                    if(responseMessage.get(4).equals(0x00)&&responseMessage.get(5).equals(0x00)) {
+                        remainValue_tv.setText(responseMessage.get(2) * 256 + responseMessage.get(3) + "");
+                        cardStatus_tv.setText("旧卡");
+                        recharge_btn.setClickable(true);
+                        setting_btn.setClickable(false);
+                        recycle_btn.setClickable(true);
+                    }
+                    else if(responseMessage.get(4).equals(0x03)&&responseMessage.get(5).equals(0x03)) {
+                        cardStatus_tv.setText("新卡，可以制作秘钥卡和操作管理卡");
+                        remainValue_tv.setText("无数据");
+                        recharge_btn.setClickable(true);
+                        setting_btn.setClickable(true);
+                        recycle_btn.setClickable(false);
+                    }
+                    else if(responseMessage.get(4).equals(0x01)&&responseMessage.get(5).equals(0x01)) {
+                        cardStatus_tv.setText("无效卡，不可操作");
+                        remainValue_tv.setText("无数据");
+                        recharge_btn.setClickable(false);
+                        setting_btn.setClickable(false);
+                        recycle_btn.setClickable(true);
+                    } else if(responseMessage.get(4).equals(0x02)&&responseMessage.get(5).equals(0x02)) {
+                        cardStatus_tv.setText("IC卡块数据读写错误");
+                        remainValue_tv.setText("无数据");
+                        recharge_btn.setClickable(false);
+                        setting_btn.setClickable(false);
+                        recycle_btn.setClickable(false);
+                    }
                     Log.i("接收到的报文", Arrays.toString(responseMessage.toArray()));
 
                 }
@@ -211,9 +238,17 @@ public class MainActivity extends Activity {
         } else
             Toast.makeText(MainActivity.this, "请先连接wifi", Toast.LENGTH_SHORT).show();
     }
+    public void readOperation(){
+        if (MyUtils.isWifiConnect(MainActivity.this)) {
+            Thread thread=new Thread(new ReadMessageThread());
+            thread.start();
+        } else
+            Toast.makeText(MainActivity.this, "请先连接wifi", Toast.LENGTH_SHORT).show();
+    }
     private String getNowPassword(){
         SharedPreferences sf=getSharedPreferences("passwordData", MODE_PRIVATE);
         String nowPassword=sf.getString("nowPassword", Constants.DEFAULT_NOW_PASSWORD);
         return nowPassword;
     }
+
 }
