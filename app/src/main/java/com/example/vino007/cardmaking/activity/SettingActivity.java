@@ -72,11 +72,11 @@ public class SettingActivity extends Activity {
             @Override
             public void onClick(View v) {
 
-                SharedPreferences sf=getSharedPreferences("passwordData", MODE_PRIVATE);
-                final String oldPassword=sf.getString("oldPassword", Constants.DEFAULT_OLD_PASSWORD);
-                final String nowPassword=sf.getString("nowPassword", Constants.DEFAULT_NOW_PASSWORD);
-                Log.i("oldPassword",oldPassword);
-                Log.i("nowPassword",nowPassword);
+                SharedPreferences sf=getSharedPreferences("pwdData", MODE_PRIVATE);
+                final String oldPassword=sf.getString("oldPwd", Constants.DEFAULT_OLD_PASSWORD);
+                final String nowPassword=sf.getString("nowPwd", Constants.DEFAULT_NOW_PASSWORD);
+                Log.i("oldPwd",oldPassword);
+                Log.i("nowPwd",nowPassword);
 
                 AlertDialog.Builder builder = new AlertDialog.Builder(SettingActivity.this);
                 builder.setTitle(SettingActivity.this.getResources().getText(R.string.alterPasswordTitle));
@@ -91,11 +91,11 @@ public class SettingActivity extends Activity {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         String newPassword = alterPassword_edit.getText().toString().trim();
-                        Log.i("newPassword",newPassword);
+                        Log.i("newPwd",newPassword);
                         //使用shareence保存起来
-                        SharedPreferences.Editor editor = getSharedPreferences("passwordData", MODE_PRIVATE).edit();
-                        editor.putString("oldPassword", nowPassword);
-                        editor.putString("nowPassword", newPassword);
+                        SharedPreferences.Editor editor = getSharedPreferences("pwdData", MODE_PRIVATE).edit();
+                        editor.putString("oldPwd", nowPassword);
+                        editor.putString("nowPwd", newPassword);
                         editor.commit();
                         nowPassword_tv.setText(newPassword);
                         oldPassword_tv.setText(nowPassword);
@@ -174,14 +174,14 @@ public class SettingActivity extends Activity {
             Toast.makeText(SettingActivity.this, "请先连接wifi", Toast.LENGTH_SHORT).show();
     }
     private String getOldPassword(){
-        SharedPreferences sf=getSharedPreferences("passwordData", MODE_PRIVATE);
-        String oldPassword=sf.getString("oldPassword", Constants.DEFAULT_OLD_PASSWORD);
+        SharedPreferences sf=getSharedPreferences("pwdData", MODE_PRIVATE);
+        String oldPassword=sf.getString("oldPwd", Constants.DEFAULT_OLD_PASSWORD);
 
         return oldPassword;
     }
     private String getNowPassword(){
-        SharedPreferences sf=getSharedPreferences("passwordData", MODE_PRIVATE);
-        String nowPassword=sf.getString("nowPassword", Constants.DEFAULT_NOW_PASSWORD);
+        SharedPreferences sf=getSharedPreferences("pwdData", MODE_PRIVATE);
+        String nowPassword=sf.getString("nowPwd", Constants.DEFAULT_NOW_PASSWORD);
         return nowPassword;
     }
 

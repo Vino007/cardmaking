@@ -164,7 +164,7 @@ public class SocketClient {
      */
 
     public void sendMessage(List<Integer> msg) {
-
+        Log.i("send message",Arrays.toString(msg.toArray()));
       //  msg = sumCheck(msg);//添加和校验
         try {
             os = client.getOutputStream();
@@ -211,6 +211,7 @@ public class SocketClient {
         }catch (IOException e) {
             e.printStackTrace();
         }
+        Log.i("receive message",Arrays.toString(resultMsg.toArray()));
         return resultMsg;
 
     }

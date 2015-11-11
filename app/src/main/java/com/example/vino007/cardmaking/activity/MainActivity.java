@@ -195,34 +195,37 @@ public class MainActivity extends Activity {
                     String alterMessage=MessageHandler.handleMessage(responseMessage);
                     if(alterMessage!=null)
                         Toast.makeText(MainActivity.this, alterMessage, Toast.LENGTH_SHORT).show();
-                    if(responseMessage.get(4).equals(0x00)&&responseMessage.get(5).equals(0x00)) {
-                        remainValue_tv.setText(responseMessage.get(2) * 256 + responseMessage.get(3) + "");
-                        cardStatus_tv.setText("旧卡");
-                        recharge_btn.setClickable(true);
-                        setting_btn.setClickable(false);
-                        recycle_btn.setClickable(true);
+                    if(responseMessage!=null &&responseMessage.size()==Constants.RECEIVED_MESSAGE_LENGTH){
+                        if(responseMessage.get(4).equals(0x00)&&responseMessage.get(5).equals(0x00)) {
+                            remainValue_tv.setText(responseMessage.get(2) * 256 + responseMessage.get(3) + "");
+                            cardStatus_tv.setText("旧卡");
+                            recharge_btn.setClickable(true);
+                            setting_btn.setClickable(false);
+                            recycle_btn.setClickable(true);
+                        }
+                        else if(responseMessage.get(4).equals(0x03)&&responseMessage.get(5).equals(0x03)) {
+                            cardStatus_tv.setText("新卡，可以制作秘钥卡和操作管理卡");
+                            remainValue_tv.setText("无数据");
+                            recharge_btn.setClickable(true);
+                            setting_btn.setClickable(true);
+                            recycle_btn.setClickable(false);
+                        }
+                        else if(responseMessage.get(4).equals(0x01)&&responseMessage.get(5).equals(0x01)) {
+                            cardStatus_tv.setText("无效卡，不可操作");
+                            remainValue_tv.setText("无数据");
+                            recharge_btn.setClickable(false);
+                            setting_btn.setClickable(false);
+                            recycle_btn.setClickable(true);
+                        } else if(responseMessage.get(4).equals(0x02)&&responseMessage.get(5).equals(0x02)) {
+                            cardStatus_tv.setText("IC卡块数据读写错误");
+                            remainValue_tv.setText("无数据");
+                            recharge_btn.setClickable(false);
+                            setting_btn.setClickable(false);
+                            recycle_btn.setClickable(false);
+                        }
+                        Log.i("接收到的报文", Arrays.toString(responseMessage.toArray()));
                     }
-                    else if(responseMessage.get(4).equals(0x03)&&responseMessage.get(5).equals(0x03)) {
-                        cardStatus_tv.setText("新卡，可以制作秘钥卡和操作管理卡");
-                        remainValue_tv.setText("无数据");
-                        recharge_btn.setClickable(true);
-                        setting_btn.setClickable(true);
-                        recycle_btn.setClickable(false);
-                    }
-                    else if(responseMessage.get(4).equals(0x01)&&responseMessage.get(5).equals(0x01)) {
-                        cardStatus_tv.setText("无效卡，不可操作");
-                        remainValue_tv.setText("无数据");
-                        recharge_btn.setClickable(false);
-                        setting_btn.setClickable(false);
-                        recycle_btn.setClickable(true);
-                    } else if(responseMessage.get(4).equals(0x02)&&responseMessage.get(5).equals(0x02)) {
-                        cardStatus_tv.setText("IC卡块数据读写错误");
-                        remainValue_tv.setText("无数据");
-                        recharge_btn.setClickable(false);
-                        setting_btn.setClickable(false);
-                        recycle_btn.setClickable(false);
-                    }
-                    Log.i("接收到的报文", Arrays.toString(responseMessage.toArray()));
+
 
                 }
 
@@ -246,8 +249,8 @@ public class MainActivity extends Activity {
             Toast.makeText(MainActivity.this, "请先连接wifi", Toast.LENGTH_SHORT).show();
     }
     private String getNowPassword(){
-        SharedPreferences sf=getSharedPreferences("passwordData", MODE_PRIVATE);
-        String nowPassword=sf.getString("nowPassword", Constants.DEFAULT_NOW_PASSWORD);
+        SharedPreferences sf=getSharedPreferences("pwdData", MODE_PRIVATE);
+        String nowPassword=sf.getString("nowPwd", Constants.DEFAULT_NOW_PASSWORD);
         return nowPassword;
     }
 
