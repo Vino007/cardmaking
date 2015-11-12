@@ -30,7 +30,8 @@ public class SocketClient {
     public SocketClient(String host, int port) throws RuntimeException {
         try {
             client = new Socket(host, port);//这种构造器会一直阻塞到直到连上服务器
-            // client.setSoTimeout(6000);//设置超时时间
+
+           // client.setSoTimeout(6000);//设置超时时间
         } catch (IOException e) {
             e.printStackTrace();
             Log.e("newSocketError", "newSocketError");
@@ -103,53 +104,17 @@ public class SocketClient {
             e.printStackTrace();
         }
     }
-
-    /**
-     * 和校验
-     * @param msg
-     * @return
-     */
-    public List<Integer> sumCheck(List<Integer> msg){
-
-        Integer sum=0;
-        for(int i=0;i<msg.size()-2;i++){
-            sum=sum+msg.get(i);
-        }
-        Integer addh=sum/256;
-        Integer addl=sum%256;
-        msg.set(msg.size() - 2, addh);
-        msg.set(msg.size() - 1, addl);
-        return  msg;
+    public  String getClientStatus(){
+        if(client==null){
+            return "client null";
+        }else if(client.isClosed()==true){
+            return "client closed";
+        }else if(client.isConnected()==false){
+            return "client disConnected";
+        }else
+            return "client run correctly";
     }
 
-    /**
-     * 下行报文的crc校验
-     *
-     * @param msg
-     * @return
-     */
-    public List<Integer> crc(List<Integer> msg) {
-        StringBuilder sb = new StringBuilder();
-        //校验前7位，后两位为crc校验码
-        for (int i = 0; i < msg.size() - 2; i++) {
-            if (msg.get(i) < 17)
-                sb.append("0" + Integer.toHexString(msg.get(i)));
-            else
-                sb.append(Integer.toHexString(msg.get(i)));
-        }
-        byte[] sbuf = CRC16M.getSendBuf(sb.toString());
-        String crcResultHexString = CRC16M.getBufHexStr(sbuf);
-        String crcLow = crcResultHexString.charAt(crcResultHexString.length() - 2) + "" + crcResultHexString.charAt(crcResultHexString.length() - 1);
-        String crcHigh = crcResultHexString.charAt(crcResultHexString.length() - 4) + "" + crcResultHexString.charAt(crcResultHexString.length() - 3);
-        Log.i("crc", crcResultHexString);
-        Log.i("crclow", crcLow);
-        Log.i("crchigh", crcHigh);
-        msg.set(msg.size() - 2, Integer.parseInt(crcHigh, 16));
-        msg.set(msg.size() - 1, Integer.parseInt(crcLow, 16));
-        Log.i("下行报文", Arrays.toString(msg.toArray()));
-        return msg;
-
-    }
 
     public boolean isClose() {
         return client.isClosed();
@@ -164,7 +129,7 @@ public class SocketClient {
      */
 
     public void sendMessage(List<Integer> msg) {
-        Log.i("send message",Arrays.toString(msg.toArray()));
+        Log.i("sendMessage",Arrays.toString(msg.toArray()));
       //  msg = sumCheck(msg);//添加和校验
         try {
             os = client.getOutputStream();
@@ -193,6 +158,7 @@ public class SocketClient {
     }
 
     public List<Integer> readMessage(){
+
         List<Integer> resultMsg=new ArrayList<>();
         try {
             is = client.getInputStream();
@@ -211,7 +177,8 @@ public class SocketClient {
         }catch (IOException e) {
             e.printStackTrace();
         }
-        Log.i("receive message",Arrays.toString(resultMsg.toArray()));
+        Log.i("receiveMessage",Arrays.toString(resultMsg.toArray()));
+
         return resultMsg;
 
     }

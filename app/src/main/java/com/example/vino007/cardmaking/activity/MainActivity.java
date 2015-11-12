@@ -159,11 +159,13 @@ public class MainActivity extends Activity {
 
     }
     public class ReadMessageThread implements Runnable{
-
+        int count=0;
         @Override
         public void run() {
             client=application.getClient();
-            while (true) {
+            while (MyUtils.isWifiConnect(MainActivity.this)) {
+                count++;
+                Log.i("clientStatus",client.getClientStatus()+",count="+count);
                 if (client != null && !client.isClose()) { //判断socket连接是否还存在
                     List<Integer> responseMessage=client.readMessage();
                     if(responseMessage!=null) {
@@ -189,7 +191,7 @@ public class MainActivity extends Activity {
         @Override
         public void handleMessage(Message msg) {
             if (msg.what == 0X01) {
-              //  Toast.makeText(MainActivity.this, "发送命令成功", Toast.LENGTH_SHORT).show();
+
                 if (msg.obj != null) {
                     List<Integer> responseMessage = (List<Integer>) msg.obj;
                     String alterMessage=MessageHandler.handleMessage(responseMessage);
@@ -215,7 +217,7 @@ public class MainActivity extends Activity {
                             remainValue_tv.setText("无数据");
                             recharge_btn.setClickable(false);
                             setting_btn.setClickable(false);
-                            recycle_btn.setClickable(true);
+                            recycle_btn.setClickable(false);
                         } else if(responseMessage.get(4).equals(0x02)&&responseMessage.get(5).equals(0x02)) {
                             cardStatus_tv.setText("IC卡块数据读写错误");
                             remainValue_tv.setText("无数据");
