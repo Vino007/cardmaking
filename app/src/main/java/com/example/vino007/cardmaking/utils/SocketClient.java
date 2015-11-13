@@ -28,7 +28,7 @@ public class SocketClient {
     BufferedReader in = null;
 
     public SocketClient(String host, int port) throws RuntimeException {
-        try {
+      /*  try {
             client = new Socket(host, port);//这种构造器会一直阻塞到直到连上服务器
 
            // client.setSoTimeout(6000);//设置超时时间
@@ -36,7 +36,7 @@ public class SocketClient {
             e.printStackTrace();
             Log.e("newSocketError", "newSocketError");
             throw new RuntimeException("socketclient构造器出错");
-        }
+        }*/
     }
 
     /**
@@ -130,56 +130,130 @@ public class SocketClient {
 
     public void sendMessage(List<Integer> msg) {
         Log.i("sendMessage",Arrays.toString(msg.toArray()));
-      //  msg = sumCheck(msg);//添加和校验
+        Socket client= null;
         try {
-            os = client.getOutputStream();
-            BufferedOutputStream out = new BufferedOutputStream(os);//不能使用dataoutputStream，由于data传送的是byte类型，byte的范围-127-127,不符合
-            is = client.getInputStream();
-            in = new BufferedReader(new InputStreamReader(is));
-
-            if (msg != null) {
-                for (int i = 0; i < msg.size(); i++) {
-
-                    out.write(msg.get(i));
-
-                }
-                out.flush();
-                MyUtils.clearList(msg);//发送成功后清空报文数据
-
-            }
-            //return in.readLine();//阻塞直到读取到换行，读取响应的字符串
-
+            client = new Socket(Constants.DEFAULT_DEVICE_IP,Constants.DEFAULT_PORT);
         } catch (IOException e) {
             e.printStackTrace();
-        } finally {
+        }
+        if(client!=null) {
+            try {
+                os = client.getOutputStream();
+                BufferedOutputStream out = new BufferedOutputStream(os);//不能使用dataoutputStream，由于data传送的是byte类型，byte的范围-127-127,不符合
+                is = client.getInputStream();
+                in = new BufferedReader(new InputStreamReader(is));
+
+                if (msg != null) {
+                    for (int i = 0; i < msg.size(); i++) {
+
+                        out.write(msg.get(i));
+
+                    }
+                    out.flush();
+                    MyUtils.clearList(msg);//发送成功后清空报文数据
+
+                }
+                //return in.readLine();//阻塞直到读取到换行，读取响应的字符串
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            } finally {
+
+                if (out != null)
+                    out.close();
+                if (os != null)
+                    try {
+                        os.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Log.e("closeError", "closeError");
+                    }
+                if (in != null)
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                if (is != null)
+                    try {
+                        is.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        client.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
 
 
+            }
         }
     }
 
     public List<Integer> readMessage(){
-
-        List<Integer> resultMsg=new ArrayList<>();
+        Socket client= null;
         try {
-            is = client.getInputStream();
-
-        in = new BufferedReader(new InputStreamReader(is));
-        int data;
-        while ((data=in.read())!='\r'){ //判断接收到换行后停止
-
-            if (resultMsg.size()==0&&data==0x05)  //过滤报文
-                 resultMsg.add(data);
-            else if (resultMsg.size()==1&&data==0x00)
-                resultMsg.add(data);
-            else if (resultMsg.size()>1)
-                resultMsg.add(data);
-        }
-        }catch (IOException e) {
+            client = new Socket(Constants.DEFAULT_DEVICE_IP,Constants.DEFAULT_PORT);
+        } catch (IOException e) {
             e.printStackTrace();
         }
-        Log.i("receiveMessage",Arrays.toString(resultMsg.toArray()));
+        if(client!=null){
+            List<Integer> resultMsg=new ArrayList<>();
+            try {
+                is = client.getInputStream();
 
-        return resultMsg;
+                in = new BufferedReader(new InputStreamReader(is));
+                int data;
+                while ((data=in.read())!='\r'){ //判断接收到换行后停止
+
+                    if (resultMsg.size()==0&&data==0x05)  //过滤报文
+                        resultMsg.add(data);
+                    else if (resultMsg.size()==1&&data==0x00)
+                        resultMsg.add(data);
+                    else if (resultMsg.size()>1)
+                        resultMsg.add(data);
+                }
+            }catch (IOException e) {
+                e.printStackTrace();
+            }finally {
+
+                if(out!=null)
+                    out.close();
+                if(os!=null)
+                    try {
+                        os.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                        Log.e("closeError","closeError");
+                    }
+                if(in!=null)
+                    try {
+                        in.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                if(is!=null)
+                    try {
+                        is.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        client.close();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+            }
+            Log.i("receiveMessage", Arrays.toString(resultMsg.toArray()));
+            return resultMsg;
+        }else{
+            return  null;
+        }
+
+
 
     }
 

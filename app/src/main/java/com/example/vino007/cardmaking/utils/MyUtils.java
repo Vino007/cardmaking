@@ -34,7 +34,7 @@ public class MyUtils {
                 activeNetwork.isConnectedOrConnecting();
 
         boolean isWifi = false;
-        if (isConnected) {//
+        if (isConnected) {
             isWifi = activeNetwork.getType() == ConnectivityManager.TYPE_WIFI;
 
         }

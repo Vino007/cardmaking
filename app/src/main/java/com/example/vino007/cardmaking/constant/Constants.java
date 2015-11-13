@@ -6,6 +6,7 @@ package com.example.vino007.cardmaking.constant;
 public class Constants {
     public final static String DEFAULT_DEVICE_IP="192.168.4.1 ";
     public final static int DEFAULT_PORT=8080;
+    public final static int DEFAULT_LISTEN_PORT =9999;
     public final static String DEFAULT_OLD_PASSWORD="FFFFFF";
     public final static String DEFAULT_NOW_PASSWORD="156234";
     public final  static int MESSAGE_LENGTH=21;

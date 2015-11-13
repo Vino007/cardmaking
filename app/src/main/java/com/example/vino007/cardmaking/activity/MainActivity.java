@@ -23,10 +23,13 @@ import com.example.vino007.cardmaking.utils.MessageHandler;
 import com.example.vino007.cardmaking.utils.MyApplication;
 import com.example.vino007.cardmaking.utils.MyUtils;
 import com.example.vino007.cardmaking.utils.SocketClient;
+import com.example.vino007.cardmaking.utils.SocketServer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * 0x01：发送命令成功
@@ -40,8 +43,6 @@ import java.util.List;
  * 发送一个操作后，要开启监听单片机发送回来的数据
  */
 public class MainActivity extends Activity {
-
-
     private Button recharge_btn;
     private Button recycle_btn;
     private Button setting_btn;
@@ -49,7 +50,8 @@ public class MainActivity extends Activity {
     private TextView cardStatus_tv;
     private Handler handler;
     private List<Integer> message ;//报文存储
-    private SocketClient client = null;
+    private Button detect_btn;
+
     private MyApplication application;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,15 +64,22 @@ public class MainActivity extends Activity {
         recharge_btn= (Button) findViewById(R.id.recharge_btn);
         recycle_btn= (Button) findViewById(R.id.recycle_btn);
         setting_btn= (Button) findViewById(R.id.setting_btn);
+        detect_btn= (Button) findViewById(R.id.detect_btn);
         Log.d("start", "正常启动");
         handler = new MyHandler();
         //初始化下行报文
         message= MessageHandler.initMessage();
         application = (MyApplication) MainActivity.this.getApplication();
-        readOperation();//死循环线程在其他activity中也不会销毁
+
+
         /******************************监听器************************************/
 
-
+        detect_btn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                readOperation();//死循环线程在其他activity中也不会销毁
+            }
+        });
         recharge_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -138,35 +147,23 @@ public class MainActivity extends Activity {
     class SendMessageThread implements Runnable {
         @Override
         public void run() {
-            client=application.getClient();
-            if (client != null && !client.isClose()) { //判断socket连接是否还存在
-                // client.sendMessage(message);//无返回值，不读取模块返回的信息
-              //  List<Integer> responseMessage=client.sendMessageWithResponse(message);
+                SocketClient client=new SocketClient(Constants.DEFAULT_DEVICE_IP,Constants.DEFAULT_PORT);
                 client.sendMessage(message);
-           //     Log.i("responseMessage",Arrays.toString(responseMessage.toArray()));
                 Message msg = handler.obtainMessage();
                 msg.what = 0X01;//发送报文成功
-           //     msg.obj=responseMessage;
                 handler.sendMessage(msg);
-            }else
-            {
-                Message msg = handler.obtainMessage();
-                msg.what = 0X04;//发送报文成功
-                handler.sendMessage(msg);
-            }
-
         }
 
     }
     public class ReadMessageThread implements Runnable{
-        int count=0;
+
         @Override
         public void run() {
-            client=application.getClient();
-            while (MyUtils.isWifiConnect(MainActivity.this)) {
+            /*SocketClient client=new SocketClient(Constants.DEFAULT_DEVICE_IP,Constants.DEFAULT_PORT);
+
+            while (true) {
                 count++;
-                Log.i("clientStatus",client.getClientStatus()+",count="+count);
-                if (client != null && !client.isClose()) { //判断socket连接是否还存在
+
                     List<Integer> responseMessage=client.readMessage();
                     if(responseMessage!=null) {
                         Log.i("监听收到的报文为", Arrays.toString(responseMessage.toArray()));
@@ -175,14 +172,14 @@ public class MainActivity extends Activity {
                         msg.obj = responseMessage;
                         handler.sendMessage(msg);
                     }
-                } else {
-                    Message msg = handler.obtainMessage();
-                    msg.what = 0X04;//发送报文成功
-                    handler.sendMessage(msg);
-                }
-            }
+
+            }*/
+            SocketServer server=new SocketServer(Constants.DEFAULT_LISTEN_PORT);
+            server.beginListen();
         }
     }
+
+
 
     /**
      * *******************************handler********************************************
@@ -201,29 +198,29 @@ public class MainActivity extends Activity {
                         if(responseMessage.get(4).equals(0x00)&&responseMessage.get(5).equals(0x00)) {
                             remainValue_tv.setText(responseMessage.get(2) * 256 + responseMessage.get(3) + "");
                             cardStatus_tv.setText("旧卡");
-                            recharge_btn.setClickable(true);
+                            /*recharge_btn.setClickable(true);
                             setting_btn.setClickable(false);
-                            recycle_btn.setClickable(true);
+                            recycle_btn.setClickable(true);*/
                         }
                         else if(responseMessage.get(4).equals(0x03)&&responseMessage.get(5).equals(0x03)) {
                             cardStatus_tv.setText("新卡，可以制作秘钥卡和操作管理卡");
                             remainValue_tv.setText("无数据");
-                            recharge_btn.setClickable(true);
+                            /*recharge_btn.setClickable(true);
                             setting_btn.setClickable(true);
-                            recycle_btn.setClickable(false);
+                            recycle_btn.setClickable(false);*/
                         }
                         else if(responseMessage.get(4).equals(0x01)&&responseMessage.get(5).equals(0x01)) {
                             cardStatus_tv.setText("无效卡，不可操作");
                             remainValue_tv.setText("无数据");
-                            recharge_btn.setClickable(false);
+                           /* recharge_btn.setClickable(false);
                             setting_btn.setClickable(false);
-                            recycle_btn.setClickable(false);
+                            recycle_btn.setClickable(false);*/
                         } else if(responseMessage.get(4).equals(0x02)&&responseMessage.get(5).equals(0x02)) {
                             cardStatus_tv.setText("IC卡块数据读写错误");
                             remainValue_tv.setText("无数据");
-                            recharge_btn.setClickable(false);
+                            /*recharge_btn.setClickable(false);
                             setting_btn.setClickable(false);
-                            recycle_btn.setClickable(false);
+                            recycle_btn.setClickable(false);*/
                         }
                         Log.i("接收到的报文", Arrays.toString(responseMessage.toArray()));
                     }
@@ -236,6 +233,24 @@ public class MainActivity extends Activity {
             }
         }
     }
+/*    public void readTimerTask(){
+        TimerTask task=new TimerTask() {
+            @Override
+            public void run() {
+                SocketClient client=new SocketClient(Constants.DEFAULT_DEVICE_IP,Constants.DEFAULT_PORT);
+                List<Integer> responseMessage=client.readMessage();
+                if(responseMessage!=null) {
+                    Log.i("监听收到的报文为", Arrays.toString(responseMessage.toArray()));
+                    Message msg = handler.obtainMessage();
+                    msg.what=0x01;
+                    msg.obj = responseMessage;
+                    handler.sendMessage(msg);
+                }
+            }
+        };
+        Timer timer=new Timer();
+        timer.schedule(task,10,500);//延时1000ms执行，1000ms执行一次
+    }*/
     public void  sendOperation(){
         if (MyUtils.isWifiConnect(MainActivity.this)) {
             Thread thread=new Thread(new SendMessageThread());
